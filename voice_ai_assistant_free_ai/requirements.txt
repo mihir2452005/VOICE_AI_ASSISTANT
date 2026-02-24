@@ -1,6 +1,5 @@
-google-generativeai
-sounddevice
-numpy
+pyaudio
 openai-whisper
 pyttsx3
-python-dotenv
+google-generativeai
+numpy

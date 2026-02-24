@@ -1,10 +1,17 @@
 import whisper
+import os
 
 model = whisper.load_model("base")
 
-def transcribe_audio(audio_path):
+os.makedirs("output/transcripts", exist_ok=True)
+
+def transcribe(audio_path):
     result = model.transcribe(audio_path)
-    text = result["text"].strip()
+    text = result["text"]
     lang = result["language"]
+
+    with open("output/transcripts/latest.txt", "w", encoding="utf-8") as f:
+        f.write(text)
+
     print(f"🧠 DETECTED: {text} [{lang}]")
-    return text
+    return text, lang

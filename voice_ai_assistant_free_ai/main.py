@@ -1,22 +1,27 @@
 from record_audio import record_audio
-from stt_whisper import transcribe_audio
-from brain_gemini import ask_ai
-from tts_offline import speak
+from stt_whisper import transcribe
+from tts_offline import speak_and_save
+from brain_gemini import ask_gemini
+import time
 
-print("🎙️ Voice AI Assistant with Online Brain")
-print("Ctrl+C to stop")
+print("🎙️ Voice AI Assistant (PyAudio + Whisper + Gemini)")
+print("Ctrl+C to stop\n")
 
-while True:
-    audio_file = record_audio()
-    user_text = transcribe_audio(audio_file)
+try:
+    while True:
+        audio_file = record_audio()
+        user_text, lang = transcribe(audio_file)
 
-    if user_text.lower() in ["exit", "quit", "stop"]:
-        print("👋 Exiting...")
-        break
+        if not user_text.strip():
+            continue
 
-    print("You:", user_text)
+        print("You:", user_text)
 
-    ai_reply = ask_ai(user_text)
-    print("AI:", ai_reply)
+        ai_reply = ask_gemini(user_text)
+        print("AI:", ai_reply)
 
-    speak(ai_reply)
+        speak_and_save(ai_reply)
+        time.sleep(0.5)
+
+except KeyboardInterrupt:
+    print("\n🛑 Stopped.")
