@@ -8,21 +8,32 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 # Start a global chat session for memory
 chat_session = client.chats.create(model=MODEL_NAME)
 
-def ask_gemini(audio_file_path):
-    """Uploads voice audio directly to Gemini using the new GenAI SDK."""
+def ask_gemini(audio_file_path, image_file_path=None):
+    """Uploads voice audio (and optionally a screenshot) directly to Gemini."""
     try:
-        print("🧠 Understanding your voice directly...")
+        print("🧠 Understanding your context directly...")
         
-        # Upload using the new files API
+        # 1. Upload the Audio
         audio_clip = client.files.upload(file=audio_file_path)
         
-        # We add a tiny delay to allow Google processing
+        # 2. Upload the Image (if present)
+        image_clip = None
+        if image_file_path:
+            print("👁️ Giving Gemini access to your screen...")
+            image_clip = client.files.upload(file=image_file_path)
+        
         time.sleep(1)
 
-        # Send the file handle along with the prompt to the chat session
-        response = chat_session.send_message(
-            message=[audio_clip, "Please listen to the audio and respond conversationally."]
-        )
+        # 3. Build the Multimodal Payload
+        prompt_instructions = "Please listen to the audio and respond conversationally. Use the provided screenshot of the user's screen for visual context if applicable."
+        
+        payload = [audio_clip]
+        if image_clip:
+            payload.append(image_clip)
+        payload.append(prompt_instructions)
+
+        # 4. Send the payload to the chat session
+        response = chat_session.send_message(message=payload)
         
         return response.text
         
