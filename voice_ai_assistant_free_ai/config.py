@@ -1,4 +1,11 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from the .env file
+load_dotenv()
+
 AI_MODE = "gemini"
 
-GEMINI_API_KEY = "AIzaSyCGwyqDy3am0taSXn8-2Yg_PQ5yglHzZUg"
+# Get the API Key securely from the .env file
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = "models/gemini-flash-latest"
