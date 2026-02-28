@@ -70,3 +70,21 @@ def record_audio():
 
     print(f"💾 Saved ({len(frames) / chunks_per_second:.1f}s): {filename}")
     return filename
+
+def transcribe_audio_to_text(filename: str) -> str:
+    """Takes a .wav file and converts it entirely to text using the free Google Speech API."""
+    import speech_recognition as sr
+    recognizer = sr.Recognizer()
+    
+    print("📝 Transcribing audio to text for Grok...")
+    with sr.AudioFile(filename) as source:
+        audio_data = recognizer.record(source)
+        try:
+            # Requires an active internet connection to ping google's free transcriber
+            text = recognizer.recognize_google(audio_data)
+            print(f"🗣️ You said: '{text}'")
+            return text
+        except sr.UnknownValueError:
+            return ""
+        except sr.RequestError as e:
+            return f"Error with STT Middleware: {e}"

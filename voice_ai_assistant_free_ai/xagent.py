@@ -71,5 +71,11 @@ def start_supervisor():
         print("\n[XAgent] 💥 Maximum restart attempts reached. System failure. Shutting down.")
         speak_and_save("Critical system failure. I am unable to recover and must shut down.")
 
+import sys
+
 if __name__ == "__main__":
-    start_supervisor()
+    try:
+        start_supervisor()
+    except KeyboardInterrupt:
+        print("\n[XAgent] 🛑 Assistant stopped manually by user. Shutting down Supervisor.")
+        sys.exit(0)

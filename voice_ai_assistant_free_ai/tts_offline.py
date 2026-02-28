@@ -3,9 +3,9 @@ import winsound
 import multiprocessing
 from datetime import datetime
 
-os.makedirs("output/audio_output", exist_ok=True)
 
-def _generate_tts(text, filename):
+
+def _generate_tts(text):
     import pyttsx3
     engine = pyttsx3.init()
 
@@ -16,16 +16,14 @@ def _generate_tts(text, filename):
             break
 
     engine.setProperty("rate", 170)
-    engine.save_to_file(text, filename)
+    # Stream directly to the speakers
+    engine.say(text)
     engine.runAndWait()
 
 def speak_and_save(text):
-    filename = f"output/audio_output/reply_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
-    
-    # Run the engine in an isolated Process to prevent Windows SAPI5 from freezing
-    p = multiprocessing.Process(target=_generate_tts, args=(text, filename))
+    # Run SAPI5 streaming in an isolated Process to prevent thread hanging
+    p = multiprocessing.Process(target=_generate_tts, args=(text,))
     p.start()
-    p.join()  # Wait for the audio file to finish generating
+    p.join()  # Wait for the audio to finish playing out loud
     
-    print("🔊 Audio played and saved:", filename)
-    winsound.PlaySound(filename, winsound.SND_FILENAME)
+    print("🔊 Audio streamed directly via SAPI5.")

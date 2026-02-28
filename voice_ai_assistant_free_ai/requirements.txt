@@ -1,5 +1,11 @@
 pyaudio
+google-genai
+pillow
+pyautogui
 pyttsx3
-google-generativeai
-numpy
-python-dotenv
+psutil
+beautifulsoup4
+requests
+SpeechRecognition
+openai
+duckduckgo-search
