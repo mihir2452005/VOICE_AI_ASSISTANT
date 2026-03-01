@@ -5,6 +5,10 @@ from datetime import datetime
 from reportlab.pdfgen import canvas
 from pptx import Presentation
 import psutil
+import pyautogui
+from ctypes import cast, POINTER
+from comtypes import CLSCTX_ALL
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 def get_current_time():
     """
@@ -42,6 +46,46 @@ def open_application(app_name: str):
     except Exception as e:
         return f"Failed to open {app_name}. Error: {e}"
 
+def close_application(app_name: str):
+    """
+    Closes a running Windows application by forcibly terminating its process.
+    Args:
+        app_name: The name of the application to close (e.g., 'notepad', 'calc', 'chrome').
+    """
+    app_name = app_name.lower().strip()
+    
+    # Common mappings
+    app_map = {
+        "notepad": "notepad.exe",
+        "calculator": "calc.exe",
+        "calc": "calc.exe",
+        "file explorer": "explorer.exe",
+        "explorer": "explorer.exe",
+        "command prompt": "cmd.exe",
+        "cmd": "cmd.exe",
+        "browser": "msedge.exe",
+        "chrome": "chrome.exe",
+    }
+    
+    target_exe = app_map.get(app_name, f"{app_name}.exe")
+    terminated_count = 0
+    
+    try:
+        for proc in psutil.process_iter(['name']):
+            try:
+                if proc.info['name'] and proc.info['name'].lower() == target_exe:
+                    proc.kill()
+                    terminated_count += 1
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+                
+        if terminated_count > 0:
+            return f"Successfully closed {app_name} ({terminated_count} processes terminated)."
+        else:
+            return f"Could not find any running processes matching '{app_name}'."
+    except Exception as e:
+        return f"Failed to close {app_name}. Error: {e}"
+
 def open_website(url: str):
     """
     Opens a specific website URL in the user's default web browser.
@@ -67,15 +111,16 @@ def create_file(filename: str, content: str):
         content: The text content to write inside the file.
     """
     try:
-        # Resolve the path to the user's Desktop
-        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-        file_path = os.path.join(desktop_path, filename)
+        # Resolve the path to the user's NOVA workspace folder
+        nova_path = r"d:\projects\degree\jarvis\voice_ai_assistant_free_ai\NOVA"
+        os.makedirs(nova_path, exist_ok=True)
+        file_path = os.path.join(nova_path, filename)
         
         # Write the file
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
             
-        return f"Successfully created the file '{filename}' on the Desktop."
+        return f"Successfully created the file '{filename}' in the NOVA workspace."
     except Exception as e:
         return f"Failed to create file '{filename}'. Error: {e}"
 
@@ -90,8 +135,9 @@ def create_pdf(filename: str, content: str):
         if not filename.endswith('.pdf'):
             filename += '.pdf'
             
-        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-        file_path = os.path.join(desktop_path, filename)
+        nova_path = r"d:\projects\degree\jarvis\voice_ai_assistant_free_ai\NOVA"
+        os.makedirs(nova_path, exist_ok=True)
+        file_path = os.path.join(nova_path, filename)
         
         c = canvas.Canvas(file_path)
         y_position = 800
@@ -116,7 +162,7 @@ def create_pdf(filename: str, content: str):
                 y_position = 800
                 
         c.save()
-        return f"Successfully created the PDF document '{filename}' on the Desktop."
+        return f"Successfully created the PDF document '{filename}' in the NOVA workspace."
     except Exception as e:
         return f"Failed to create PDF '{filename}'. Error: {e}"
 
@@ -132,8 +178,9 @@ def create_presentation(filename: str, title: str, content: str):
         if not filename.endswith('.pptx'):
             filename += '.pptx'
             
-        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-        file_path = os.path.join(desktop_path, filename)
+        nova_path = r"d:\projects\degree\jarvis\voice_ai_assistant_free_ai\NOVA"
+        os.makedirs(nova_path, exist_ok=True)
+        file_path = os.path.join(nova_path, filename)
         
         prs = Presentation()
         
@@ -159,7 +206,7 @@ def create_presentation(filename: str, title: str, content: str):
         tf.text = content
         
         prs.save(file_path)
-        return f"Successfully created the PowerPoint presentation '{filename}' on the Desktop."
+        return f"Successfully created the PowerPoint presentation '{filename}' in the NOVA workspace."
     except Exception as e:
         return f"Failed to create PowerPoint '{filename}'. Error: {e}"
 
@@ -198,3 +245,67 @@ def check_pc_health():
         return health_report
     except Exception as e:
         return f"Failed to retrieve PC health status. Error: {e}"
+
+def media_play_pause():
+    """
+    Toggles play or pause for the current system media (e.g., Spotify, Chrome, YouTube).
+    """
+    try:
+        pyautogui.press("playpause")
+        return "Successfully toggled media play/pause."
+    except Exception as e:
+        return f"Failed to toggle play/pause: {e}"
+
+def media_next_track():
+    """
+    Skips to the next track in the current system media player.
+    """
+    try:
+        pyautogui.press("nexttrack")
+        return "Successfully skipped to the next track."
+    except Exception as e:
+        return f"Failed to skip track: {e}"
+
+def media_volume_up():
+    """
+    Increases the master system volume of the computer.
+    """
+    try:
+        # Press 5 times for a noticeable volume jump
+        pyautogui.press("volumeup", presses=5) 
+        return "Successfully increased system volume."
+    except Exception as e:
+        return f"Failed to increase volume: {e}"
+
+def media_volume_down():
+    """
+    Decreases the master system volume of the computer.
+    """
+    try:
+        # Press 5 times for a noticeable volume drop
+        pyautogui.press("volumedown", presses=5)
+        return "Successfully decreased system volume."
+    except Exception as e:
+        return f"Failed to decrease volume: {e}"
+
+def set_system_volume(percentage: int):
+    """
+    Sets the absolute master system volume of the computer to a specific percentage.
+    Args:
+        percentage: The target volume level (0 to 100).
+    """
+    try:
+        percentage = min(max(int(percentage), 0), 100)
+        
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        
+        # Scalar volume ranges from 0.0 to 1.0
+        scalar_vol = percentage / 100.0
+        volume.SetMasterVolumeLevelScalar(scalar_vol, None)
+        
+        return f"Successfully set system volume to {percentage}%."
+    except Exception as e:
+        return f"Failed to set system volume. Error: {e}"

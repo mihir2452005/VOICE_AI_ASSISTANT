@@ -1,7 +1,9 @@
-from actions.system_actions import get_current_time, open_application, open_website, create_file, create_pdf, create_presentation, check_pc_health
+from actions.system_actions import get_current_time, open_application, close_application, open_website, create_file, create_pdf, create_presentation, check_pc_health, media_play_pause, media_next_track, media_volume_up, media_volume_down, set_system_volume
 from actions.web_actions import search_web, read_webpage
 from actions.memory_actions import remember_fact, recall_facts
-from actions.gui_actions import click_on_target, analyze_screen
+from actions.gui_actions import click_on_target, analyze_screen, type_text, press_key, manage_window
+from actions.file_actions import list_directory, read_local_file
+from actions.coder_actions import write_and_replace_file, run_terminal_command
 
 def get_all_tools():
     """
@@ -21,5 +23,18 @@ def get_all_tools():
         remember_fact,
         recall_facts,
         click_on_target,
-        analyze_screen
+        analyze_screen,
+        media_play_pause,
+        media_next_track,
+        media_volume_up,
+        media_volume_down,
+        list_directory,
+        read_local_file,
+        write_and_replace_file,
+        run_terminal_command,
+        close_application,
+        set_system_volume,
+        type_text,
+        press_key,
+        manage_window
     ]

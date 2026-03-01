@@ -11,11 +11,14 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 def create_chat_session():
     """Builds the AI session, dynamically injecting Long-Term Memories into its core personality."""
     system_prompt = (
-        "You are Jarvis, a highly advanced digital assistant. You have full access to the user's computer via Action Tools.\n\n"
+        "You are Nova, a highly advanced digital assistant. You have full access to the user's computer via Action Tools.\n\n"
         f"**CRITICAL CONTEXT - LONG TERM MEMORY:**\n"
         f"{recall_facts()}\n\n"
         "Use this memory context to personalize your responses. "
-        "Do not explicitly mention that you are reading from a database unless asked."
+        "Do not explicitly mention that you are reading from a database unless asked.\n\n"
+        "**WORKSPACE CONSTRAINT:**\n"
+        "When the user asks you to read, write, or create standard files (notes, presentations, python scripts), you are heavily encouraged to use "
+        "the dedicated workspace path: `d:\\projects\\degree\\jarvis\\voice_ai_assistant_free_ai\\NOVA` unless otherwise requested."
     )
     
     return client.chats.create(

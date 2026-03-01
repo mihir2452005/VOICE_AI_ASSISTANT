@@ -11,19 +11,39 @@ def run_assistant():
     print(f"\n🎙️ Agentic Voice AI Assistant: Online [{ACTIVE_PROVIDER.upper()} Engine Active]")
     print("Ctrl+C to stop.\n")
 
+    conversation_active = False
+    
     while True:
         # 1. Wait for and record the user's voice
         audio_file = record_audio()
         
-        # 2. Process based on the Provider configuration
+        # 2. ALWAYS Transcribe first to check for the Wake Word
+        user_text = transcribe_audio_to_text(audio_file)
+        
+        # If the user is completely silent or background noise is unrecognized
+        if not user_text:
+            if conversation_active:
+                print("💤 (Silence detected. Nova is going back to sleep...)")
+                conversation_active = False
+            continue
+            
+        # 3. WAKE WORD ENGINE
+        if not conversation_active:
+            wake_words = ["nova"]
+            if not any(word in user_text.lower() for word in wake_words):
+                print("🤫 (Ignoring background noise, no wake word detected...)\n")
+                continue
+                
+            print("🔔 Wake word accepted! Conversation started...")
+            conversation_active = True
+        else:
+            print("🟢 (Conversation active, listening without wake word...)")
+        
+        # 4. Process based on the Provider configuration
         provider = ACTIVE_PROVIDER.lower()
         
         # --- DYNAMIC INTENT ROUTER ("AUTO" MODE) ---
         if provider == "auto":
-            # Eagerly transcribe the audio to see what the user wants FIRST
-            user_text = transcribe_audio_to_text(audio_file)
-            if not user_text:
-                continue # Ignore silent/unrecognized noise
                 
             # Scan for keywords that specifically require Vision capabilities
             vision_keywords = ["screen", "look", "see", "photo", "image", "picture", "read", "monitor"]
@@ -44,9 +64,6 @@ def run_assistant():
             response_text = ask_gemini(audio_file)
             
         elif provider == "grok":
-            user_text = transcribe_audio_to_text(audio_file)
-            if not user_text:
-                continue 
             response_text = brain_grok.ask_grok(user_text)
             
         else:

@@ -2,7 +2,7 @@ import os
 import json
 from openai import OpenAI
 from config import GROK_API_KEY
-from actions import system_actions, web_actions, memory_actions, gui_actions
+from actions import system_actions, web_actions, memory_actions, gui_actions, file_actions, coder_actions
 
 # Initialize the OpenAI SDK compatible Client
 is_groq = GROK_API_KEY.startswith("gsk_")
@@ -43,6 +43,20 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "close_application",
+            "description": "Closes a running Windows application by forcibly terminating its process.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "app_name": {"type": "string", "description": "The name of the application to close (e.g., 'notepad', 'calc', 'chrome')."}
+                },
+                "required": ["app_name"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "open_website",
             "description": "Opens a specific website URL in the user's default web browser.",
             "parameters": {
@@ -58,7 +72,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "create_file",
-            "description": "Creates a new text-based file on the user's Desktop with the specified content.",
+            "description": "Creates a new text-based file in the user's NOVA workspace folder with the specified content.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -73,7 +87,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "create_pdf",
-            "description": "Creates a new PDF document on the user's Desktop with the specified content.",
+            "description": "Creates a new PDF document in the user's NOVA workspace folder with the specified content.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -88,7 +102,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "create_presentation",
-            "description": "Creates a new Microsoft PowerPoint presentation (.pptx) on the user's Desktop.",
+            "description": "Creates a new Microsoft PowerPoint presentation (.pptx) in the user's NOVA workspace folder.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -193,6 +207,171 @@ tools = [
                 "required": ["query"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "type_text",
+            "description": "Simulates a human typing text on the keyboard into whatever application or text box is currently active and focused on the screen.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string", "description": "The exact string of text to type out."}
+                },
+                "required": ["text"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "press_key",
+            "description": "Simulates pressing a single key or a combination of keys on the keyboard (e.g. 'ctrl+a', 'enter', 'backspace').",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "key_combo": {"type": "string", "description": "The key or combination of keys to press, separated by a plus sign."}
+                },
+                "required": ["key_combo"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "manage_window",
+            "description": "Finds a visible window on the screen by name and snaps, resizes, or minimizes it.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "app_name": {"type": "string", "description": "The title or name of the window (e.g. 'Notepad', 'Chrome')."},
+                    "action": {
+                        "type": "string", 
+                        "description": "The window action to perform. MUST be exactly one of: 'maximize', 'minimize', 'snap_left', 'snap_right', or 'close'."
+                    }
+                },
+                "required": ["app_name", "action"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "media_play_pause",
+            "description": "Toggles play or pause for the current system media (e.g., Spotify, Chrome, YouTube).",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "media_next_track",
+            "description": "Skips to the next track in the current system media player.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "media_volume_up",
+            "description": "Increases the master system volume of the computer.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "media_volume_down",
+            "description": "Decreases the master system volume of the computer.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "set_system_volume",
+            "description": "Sets the absolute master system volume of the computer to a specific percentage.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "percentage": {"type": "integer", "description": "The target volume level (0 to 100)."}
+                },
+                "required": ["percentage"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_directory",
+            "description": "Lists the files and folders inside a specific directory on the user's computer.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "folder_path": {"type": "string", "description": "The absolute or relative path to the folder. Defaults to the NOVA workspace folder."}
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_local_file",
+            "description": "Reads the text contents of a file on the user's computer (e.g. .txt, .py, .md, .csv).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filepath": {"type": "string", "description": "The absolute or relative path to the file to read."}
+                },
+                "required": ["filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_and_replace_file",
+            "description": "Creates a new Python file or overwrites an existing file within your project directory. Use this to WRITE YOUR OWN CAPABILITIES, fix bugs, or create helper scripts.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filepath": {"type": "string", "description": "The relative path (e.g., 'actions/my_new_action.py'). You CANNOT write to folders outside this project."},
+                    "new_content": {"type": "string", "description": "The full, complete source code to write to the file."}
+                },
+                "required": ["filepath", "new_content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_terminal_command",
+            "description": "Executes a shell command on the user's PC and returns the output. Use this to install pip dependencies (e.g. 'pip install beautifulsoup4') or run tests.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "The raw Windows terminal command to execute."}
+                },
+                "required": ["command"]
+            }
+        }
     }
 ]
 
@@ -200,6 +379,7 @@ tools = [
 available_functions = {
     "get_current_time": system_actions.get_current_time,
     "open_application": system_actions.open_application,
+    "close_application": system_actions.close_application,
     "open_website": system_actions.open_website,
     "create_file": system_actions.create_file,
     "create_pdf": system_actions.create_pdf,
@@ -210,7 +390,19 @@ available_functions = {
     "remember_fact": memory_actions.remember_fact,
     "recall_facts": memory_actions.recall_facts,
     "click_on_target": gui_actions.click_on_target,
-    "analyze_screen": gui_actions.analyze_screen
+    "analyze_screen": gui_actions.analyze_screen,
+    "type_text": gui_actions.type_text,
+    "press_key": gui_actions.press_key,
+    "manage_window": gui_actions.manage_window,
+    "media_play_pause": system_actions.media_play_pause,
+    "media_next_track": system_actions.media_next_track,
+    "media_volume_up": system_actions.media_volume_up,
+    "media_volume_down": system_actions.media_volume_down,
+    "set_system_volume": system_actions.set_system_volume,
+    "list_directory": file_actions.list_directory,
+    "read_local_file": file_actions.read_local_file,
+    "write_and_replace_file": coder_actions.write_and_replace_file,
+    "run_terminal_command": coder_actions.run_terminal_command
 }
 
 # The global conversation context list
@@ -226,12 +418,31 @@ def get_base_system_prompt():
             f"{memories}\n\n"
             "Use this memory context to personalize your responses. "
             "Do not explicitly mention that you are reading from a database unless asked.\n\n"
+            "**TRUE AGENT ARCHITECTURE (SELF-IMPROVING):**\n"
+            "You have the unique ability to write your own code and build your own features using the `write_and_replace_file` and `run_terminal_command` tools. "
+            "If the user asks you to learn a new skill natively, you can create a python file in the `actions/` folder, install required packages, and then "
+            "add your new function to `action_manager.py` and your JSON tool schema array. You are an autonomous software engineer building yourself.\n\n"
+            "**WORKSPACE CONSTRAINT:**\n"
+            "When the user asks you to read, write, or create standard files (notes, presentations, python scripts), you are heavily encouraged to use "
+            "the dedicated workspace path: `d:\\projects\\degree\\jarvis\\voice_ai_assistant_free_ai\\NOVA` unless otherwise requested.\n\n"
             "**WEB SEARCH STRATEGY (TOKEN SAVING):**\n"
             "When asked for news, weather, or facts, use the `search_web` tool (which uses DuckDuckGo). "
             "Rely entirely on the 'Snippets' returned by `search_web` to answer the user. "
             "Do NOT use the `read_webpage` tool to scrape entire articles unless the user explicitly commands you to read a specific website. This saves API tokens and speeds up your response."
         )
     }
+
+def trim_memory():
+    """
+    Ensures the chat history doesn't grow infinitely and crash the API token limit.
+    Keeps the System Prompt at index 0, and preserves the latest conversations.
+    """
+    global chat_history
+    if len(chat_history) > 20:
+        system_prompt = chat_history[0]
+        # Keep the latest 15 messages alongside the critical system prompt
+        chat_history = [system_prompt] + chat_history[-15:]
+        print("🧹 (Auto-Trim) Cleared older context to preserve API token limits.")
 
 def ask_grok(user_text: str):
     """Sends text to Grok and resolves any Tool Calls before returning the final text."""
@@ -241,6 +452,8 @@ def ask_grok(user_text: str):
     # Initialize system prompt if history is empty
     if not chat_history:
         chat_history.append(get_base_system_prompt())
+        
+    trim_memory()
         
     chat_history.append({"role": "user", "content": user_text})
     

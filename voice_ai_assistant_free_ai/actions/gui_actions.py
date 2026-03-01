@@ -4,6 +4,7 @@ from PIL import ImageGrab
 import os
 from google import genai
 from config import GEMINI_API_KEY
+import pygetwindow as gw
 
 from PIL import ImageDraw, ImageFont
 
@@ -121,3 +122,77 @@ def analyze_screen(query: str):
         
     except Exception as e:
         return f"Failed to analyze screen. Error: {e}"
+
+def type_text(text: str):
+    """
+    Simulates a human typing text on the keyboard. It will type into whatever application or text box is currently active and focused on the screen.
+    Args:
+        text: The exact string of text to type out.
+    """
+    try:
+        # Small delay to give the user a split second if they are doing something
+        time.sleep(0.5) 
+        pyautogui.write(text, interval=0.01)
+        return f"Successfully typed: '{text}'"
+    except Exception as e:
+        return f"Failed to type text. Error: {e}"
+
+def press_key(key_combo: str):
+    """
+    Simulates pressing a single key or a combination of keys on the keyboard.
+    Use this for shortcuts (like 'ctrl+a', 'ctrl+c', 'ctrl+v', 'ctrl+s') or single actions (like 'enter', 'backspace', 'delete', 'tab', 'shift').
+    Args:
+        key_combo: The key or combination of keys to press, separated by a plus sign (e.g. 'ctrl+a' or 'enter').
+    """
+    try:
+        keys = [k.strip().lower() for k in key_combo.split("+")]
+        pyautogui.hotkey(*keys)
+        return f"Successfully pressed the key combination: '{key_combo}'"
+    except Exception as e:
+        return f"Failed to press key(s). Error: {e}"
+
+def manage_window(app_name: str, action: str):
+    """
+    Finds a visible window on the screen by name and snaps, resizes, or minimizes it.
+    Args:
+        app_name: The title of the window (e.g. "Notepad" or "Chrome").
+        action: The action to perform. MUST be one of: 'maximize', 'minimize', 'snap_left', 'snap_right', 'close'.
+    """
+    try:
+        # Find windows that contain the app_name in their title (case insensitive)
+        windows = [w for w in gw.getAllWindows() if app_name.lower() in w.title.lower()]
+        
+        if not windows:
+            return f"Failed to find any open window matching '{app_name}'."
+            
+        target_window = windows[0]
+        action = action.lower().strip()
+        
+        screen_width, screen_height = pyautogui.size()
+        
+        if action == "maximize":
+            target_window.maximize()
+            return f"Successfully maximized {target_window.title}."
+        elif action == "minimize":
+            target_window.minimize()
+            return f"Successfully minimized {target_window.title}."
+        elif action == "snap_left":
+            if target_window.isMaximized:
+                target_window.restore()
+            target_window.resizeTo(screen_width // 2, screen_height)
+            target_window.moveTo(0, 0)
+            return f"Successfully snapped {target_window.title} to the left."
+        elif action == "snap_right":
+            if target_window.isMaximized:
+                target_window.restore()
+            target_window.resizeTo(screen_width // 2, screen_height)
+            target_window.moveTo(screen_width // 2, 0)
+            return f"Successfully snapped {target_window.title} to the right."
+        elif action == "close":
+            target_window.close()
+            return f"Successfully closed {target_window.title}."
+        else:
+            return f"Invalid action '{action}'. Mode must be maximize, minimize, snap_left, snap_right, or close."
+            
+    except Exception as e:
+        return f"Failed to manage window for {app_name}. Error: {e}"

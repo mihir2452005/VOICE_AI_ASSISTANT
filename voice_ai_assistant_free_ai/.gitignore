@@ -11,3 +11,6 @@ long_term_memory.db
 
 # Audio outputs
 output/
+
+# AI Generated Workspace Data
+NOVA/
