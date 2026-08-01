@@ -1,0 +1,12 @@
+faster-whisper
+sounddevice
+soundfile
+numpy
+scipy
+pyttsx3
+requests
+duckduckgo-search
+Pillow
+pytesseract
+pyautogui
+pyperclip

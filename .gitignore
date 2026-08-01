@@ -1,7 +1,33 @@
+# Personal data — DO NOT commit
+memory.json
+nova_learning.json
+custom_workflows.json
+tasks.json
+
+# Generated content
+generated_code/
+generated_projects/
+output/
+notes/
+logs/
+.version_history/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
 venv/
-.env
+.venv/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
 .DS_Store
-*.wav
-*.mp3
+desktop.ini
